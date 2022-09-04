@@ -1,0 +1,128 @@
+POST /_security/user/admin123
+{
+  "password" : "admin123",
+  "roles" : [ "admin", "other_role1" ],
+  "full_name" : "admin",
+  "email" : "admin@example.com",
+  "metadata" : {
+    "intelligence" : 7
+  }
+}
+
+# create an index
+PUT places
+
+
+GET index1/_search
+
+PUT index1
+
+POST _bulk
+{ "update" : { "_id" : "0", "_index" : "index1" } } 
+{
+    "script": {
+        "inline": "ctx._source.counter += param1",
+        "lang": "js",
+        "params": {
+            "param1": 1
+        }
+    },
+    "upsert": {
+        "counter": 1
+    }
+}
+{ "update" : {"_id" : "2",  "_index" : "index1" } } 
+{ "doc" : {"field" : "value"}, "doc_as_upsert" : true } 
+
+
+
+PUT places/_doc/1
+{
+  "name": "Hangzhou",
+  "country": "China"
+}
+
+POST places/_update/1
+{
+  "doc": {
+    "continent": "Asia"
+  }
+}
+
+POST places/_update/2
+{
+  "doc": {
+    "name":"hangzhou"
+  } 
+}
+
+GET places/_search
+
+GET places/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+
+# UPSERT !!!!
+# you don't need to worry about it is a new order or 
+POST places/_bulk
+{ "update":{"_id": "2", "_index": "places"} }
+{ "doc": {"name":"hangzhou"} }
+{ "index":{ "_index": "places", "_id": 3  } }
+{ "name":"beijing","country": "china" }
+{ "index":{ "_index": "places", "_id": 4  } }
+{ "name":"Seoul","country": "korea" }
+{ "index":{ "_index": "places", "_id": 5  } }
+{ "name":"paris","country": "france" }
+
+
+# remove a field
+POST places/_update_by_query
+{
+  "script": "ctx._source.remove('country')",
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "exists": {
+            "field": "country"
+          }
+        },
+        {
+          "term" : { "country" : "france" }
+        }
+      ]
+    }
+  }
+}
+
+# update a single doc
+POST places/_update/2
+{
+  "doc": {
+    "citySize": "not big not small"
+  }
+}
+
+
+DELETE places/_doc/g9jkCYMBbJv2xs4YjkPH
+
+
+# delete index
+DELETE /2
+
+
+# Try upsert
+# if MonitoringContract.PTOrder.Id is not null, then it is new; otherwise it is an update
+POST _bulk
+{ "update":{"_id": "g9jkCYMBbJv2xs4YjkPH", "_index": "places"} }
+{ "doc": {"name":"Yi Han"} }
+{ "update":{"_id": "2", "_index": "places"} }
+{ "doc": {"name":"hangzhou"} }
+{ "update":{"_id": "2", "_index": "places"} }
+{ "doc": {"country":"china"} }
+{ "update":{"_id": "4", "_index": "places"} }
+{ "doc": {"country":"Korea"} }
